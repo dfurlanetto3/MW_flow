@@ -4,16 +4,17 @@ Flow field through monitoring well equipped with flow-converging screen
 
 Created on Sun Jul 13 11:32:02 2025
 
-@author: Davide Furlanetto
+@author: Davide Furlanetto, University of Padova
 """
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-import pandas as pd
+# import pandas as pd
+plt.rcParams.update({'font.size':12})
 
-save_folder = r'...'
-comsol_folder = r'...'
+save_folder = '...'
+comsol_folder = '...'
 os.chdir(save_folder)
 
 #%% Geometric and hydraulic properties
@@ -21,9 +22,9 @@ os.chdir(save_folder)
 # Define MW radii [m]
 R1 = 0.026 
 R2 = 0.029 
-R3 = 0.050 
+R3 = 0.050
 
-R0 = 0.5 * R1
+R0 = 0.2 * R1
 
 r0 = R0 / R1
 print('r_0 = ' , r0)
@@ -37,9 +38,9 @@ mu_w = 1.32e-3
 g_const = 9.806
 
 # set hydraulic conductivities [m/s] and convert to dimensionless permeabilities [-]
-k1 = 1E-2 * mu_w / (rho_w * g_const) / R1**2
-k2 = 1E-6 * mu_w / (rho_w * g_const) / R1**2
-k3 = 1E-5 * mu_w / (rho_w * g_const) / R1**2
+k1 = 1E-1 * mu_w / (rho_w * g_const) / R1**2
+k2 = 1E-4 * mu_w / (rho_w * g_const) / R1**2
+k3 = 1E-4 * mu_w / (rho_w * g_const) / R1**2
 
 # # Directly set permeabilities [L^2]
 # k1 = 1E-3 / R1**2
@@ -66,12 +67,12 @@ lnr2 = np.log(r2)
 
 eps = (r0**2 - 1)*(lnr0*(r0**2 + 1) - r0**2 + 1)
 
-gamma = 2*lnr0*(1 + r0**4) + 5*(1 - r0**4)
+gamma = 2*lnr0*(1 + r0**4) - r0**4 + 8*r0**2 - 7
 
 Lambda = (1/r2 * (k3/k2 + 1) * (eps*(k2/k1*lnr2 + 1) - gamma*k2) 
         + r2/r3**2 * (k3/k2 - 1) * (eps*(k2/k1 * lnr2 - 1) - gamma*k2))
         
-beta = 4 * eps / (Lambda*(1-r0))
+beta = 4 * eps / (Lambda)
 
 print("Alpha Drost: ", alpha_drost)
 print("Alpha star: ", alpha_star)
@@ -130,12 +131,12 @@ def compute_coefficients(r0, r2, r3,
     if occlusion:
         
         # ------------- Help variables -------------- #
-        lnr0 = np.log(r0)
+        lnr0 = np.log1p(r0 - 1)
         lnr2 = np.log(r2)
 
         eps = (r0**2 - 1)*(lnr0*(r0**2 + 1) - r0**2 + 1)
 
-        gamma = 2*lnr0*(1 + r0**4) + 5*(1 - r0**4)
+        gamma = 2*lnr0*(1 + r0**4) - r0**4 + 8*r0**2 - 7
 
         Lambda = (1/r2 * (k3/k2 + 1) * (eps*(k2/k1*lnr2 + 1) - gamma*k2) 
                 + r2/r3**2 * (k3/k2 - 1) * (eps*(k2/k1 * lnr2 - 1) - gamma*k2))
@@ -162,7 +163,7 @@ def compute_coefficients(r0, r2, r3,
         
         L = 1/(k2+k3) * (r3**2*(k2/k3-1) - 4*r2/Lambda * (eps*(k2/k1 * lnr2 - 1) 
                                                           - gamma*k2))
-        
+
     else:
         
         Lambda_star = (
@@ -273,7 +274,7 @@ vmin = np.nanmin(u_plot)
 vmax = np.nanmax(u_plot)
 vel_label_U = r'$|\mathbf{u}|/q_{\infty},\quad |\mathbf{q}|/q_{\infty}$'
 
-fig, ax = plt.subplots(figsize=(9, 5))
+fig, ax = plt.subplots(figsize=(9, 4.5))
 contourf_d = ax.contourf(X, Y, u_plot, levels=20,
                           cmap='viridis')
 
@@ -286,7 +287,7 @@ ax.streamplot(X, Y, np.nansum([u_x, q_x], axis=0), np.nansum([u_y, q_y], axis=0)
                broken_streamlines=False,# density=[5, 5]
                 )
     
-for R in [1, R2/R1, R3/R1]: #[1, R2/R1]: #
+for R in [1, R2/R1]: #[1, R2/R1, R3/R1]: #
     plt.gca().add_artist(
         plt.Circle((0, 0), R, color='white', linestyle='--', fill=False,
                    linewidth=1.1))
@@ -307,15 +308,15 @@ textstr = (
     rf'$\kappa_3 = {k3:.1e}$')
 
 ax.text(
-    0.75, 0.2, textstr,
+    0.725, 0.2, textstr,
     transform=ax.transAxes,
-    fontsize=10,
+    fontsize=12,
     va='top',
     bbox=dict(boxstyle='square', facecolor='white', alpha=1))
 
 plt.grid(False)
 
-# plt.savefig('f302.jpg', dpi=300, format='jpg', bbox_inches='tight')
+# plt.savefig('f102.jpg', dpi=360, format='jpg', bbox_inches='tight')
 plt.show()
 #%% Plot the pressures
 p_plot = np.nansum([p_d, p_s], axis=0)
@@ -352,72 +353,72 @@ plt.grid(False)
 plt.show()
 #%% Plot graphs
 
-# num_X = pd.read_csv(os.path.join(comsol_folder,'p104_X.csv'), comment='%', header=None)
-# num_Y = pd.read_csv(os.path.join(comsol_folder,'p104_Y.csv'), comment='%', header=None)
-# q_inf = 4.1278e-5
+# num_X = pd.read_csv(os.path.join(comsol_folder,'p102_X.csv'), comment='%', header=None)
+# num_Y = pd.read_csv(os.path.join(comsol_folder,'p102_Y.csv'), comment='%', header=None)
 
 vel_label = r'$u_x/q_{\infty},\quad q_x/q_{\infty}$'
 
 fig, axs = plt.subplots(1,2, figsize=(9, 4))
 ax=axs[0]
 
-for R in [1, R2/R1, R3/R1]: #[1, R2/R1]:#
+for R in [1, R2/R1]:#[1, R2/R1, R3/R1]: #
     ax.axvline( R, linestyle='--', color='darkgray', linewidth=1.2)
     ax.axvline(-R, linestyle='--', color='darkgray', linewidth=1.2)
 
 ax.axhline(1, color='black', linewidth=1.0)
 ax.axvline(r0, color='darkgray', linewidth=1.2)
 
-ax.plot(x_vals, u_x[int(nx_vals/2), :],linewidth=1.4)
-ax.plot(x_vals, q_x[int(nx_vals/2), :],linewidth=1.4)
+ax.plot(x_vals, u_x[int(nx_vals/2), :],linewidth=1.5)
+ax.plot(x_vals, q_x[int(nx_vals/2), :],linewidth=1.5)
 
-# # add numerical for comparison
-# ax.scatter(num_X[0]/R1, num_X[2]/q_inf, s=20,
+# add numerical for comparison
+# ax.scatter(num_X[0]/R1, num_X[2]/q_inf, s=30,
 #            marker='o',
 #            facecolors='none',
 #            edgecolors='black',
-#            linewidths=.5)
+#            linewidths=.7)
 
-# ax.scatter(num_X[0]/R1, num_X[3]/q_inf, s=20,
+# ax.scatter(num_X[0]/R1, num_X[3]/q_inf, s=30,
 #            marker='o',
 #            facecolors='none',
 #            edgecolors='black',
-#            linewidths=.5)
+#            linewidths=.7)
 
 ax.set_xlim([0, 5])
-ax.set_xlabel('$X / R_1$')
-ax.set_ylabel(vel_label)
+ax.set_xlabel('$x / R_1$', fontsize=12)
+ax.set_ylabel(vel_label, fontsize=12)
 
 ax=axs[1]
 
-for R in [1, R2/R1, R3/R1]: #[1, R2/R1]:#
+for R in [1, R2/R1]:#[1, R2/R1, R3/R1]: #
     ax.axvline( R, linestyle='--', color='darkgray', linewidth=1.2)
     ax.axvline(-R, linestyle='--', color='darkgray', linewidth=1.2)
 
 ax.axhline(1, color='black', linewidth=1.0)
 ax.axvline(r0, color='darkgray', linewidth=1.2)
 
-ax.plot(y_vals, u_x[:, int(ny_vals/2)], linewidth=1.4)
-ax.plot(y_vals, q_x[:, int(ny_vals/2)], linewidth=1.4)
+# ax.plot(y_vals, u_y[:, 1000], linewidth=1.4)
+# ax.plot(y_vals, q_y[:, 1000], linewidth=1.4)
 
-# # add numerical for comparison
+ax.plot(y_vals, u_x[:, int(ny_vals/2)], linewidth=1.5)
+ax.plot(y_vals, q_x[:, int(ny_vals/2)], linewidth=1.5)
+# add numerical for comparison
 # ax.scatter(num_Y[1]/R1, num_Y[2]/q_inf,
 #            marker='o',
-#            s=20,
+#            s=30,
 #            facecolors='none',
 #            edgecolors='black',
-#            linewidths=.5)
+#            linewidths=.7)
 
 # ax.scatter(num_Y[1]/R1, num_Y[3]/q_inf,
-#            s=20,
+#            s=30,
 #            marker='o',
 #            facecolors='none',
 #            edgecolors='black',
-#            linewidths=.5)
+#            linewidths=.7)
 
 ax.set_xlim([0, 5])
-ax.set_xlabel('$Y / R_1$')
-ax.set_ylabel(vel_label)
+ax.set_xlabel('$y / R_1$', fontsize=12)
 
 textstr = (
     rf'$\kappa_1 = {k1:.1e}$' '\n'
@@ -426,19 +427,20 @@ textstr = (
 )
 
 for ax in axs:
-    ax.yaxis.set_major_locator(MultipleLocator(.2))
+    ax.yaxis.set_major_locator(MultipleLocator(.5))
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
     ax.text(
-        0.65, 0.2, textstr,
+        0.58, 0.75, textstr,
         transform=ax.transAxes,
-        fontsize=10,
+        fontsize=12,
         va='top',
-        bbox=dict(boxstyle='square', facecolor='white', alpha=0.6)
+        bbox=dict(boxstyle='square', facecolor='white', alpha=1.0)
     )
+    ax.set_box_aspect(1)
     
 plt.grid(False)
 
-# plt.savefig('p104.jpg', dpi=300, format='jpg', bbox_inches='tight')
+# plt.savefig('p102.jpg', dpi=360, format='jpg', bbox_inches='tight')
 plt.show()
 
 #%% CASE 2: open borehole space
@@ -515,12 +517,11 @@ U = np.sqrt(u_x**2+u_y**2)
 
 #%% Plot: velocity magnitude
 u_plot = np.nansum([Q, U], axis=0)
-# u_plot = np.where(r> R0, u_plot, np.nan)
 vmin = np.nanmin(u_plot)
 vmax = np.nanmax(u_plot)
 vel_label_U = r'$|\mathbf{u}|/q_{\infty},\quad |\mathbf{q}|/q_{\infty}$'
 
-fig, ax = plt.subplots(figsize=(9, 5))
+fig, ax = plt.subplots(figsize=(9, 4.5))
 contourf_d = ax.contourf(X, Y, u_plot, levels=20,
                           cmap='viridis')
 
@@ -533,7 +534,7 @@ ax.streamplot(X, Y, np.nansum([u_x, q_x], axis=0), np.nansum([u_y, q_y], axis=0)
                broken_streamlines=False,# density=[5, 5]
                 )
     
-for R in [1, R2/R1, R3/R1]: # [1, R2/R1]: #
+for R in [1, R2/R1]: #[1, R2/R1, R3/R1]: # 
     plt.gca().add_artist(
         plt.Circle((0, 0), R, color='white', linestyle='--', fill=False,
                    linewidth=1.1)
@@ -552,87 +553,85 @@ textstr = (
 )
 
 ax.text(
-    0.75, 0.2, textstr,
+    0.725, 0.2, textstr,
     transform=ax.transAxes,
-    fontsize=10,
+    fontsize=12,
     va='top',
     bbox=dict(boxstyle='square', facecolor='white', alpha=1)
 )
 plt.grid(False)
 
-# plt.savefig('f401.jpg', dpi=300, format='jpg', bbox_inches='tight')
+# plt.savefig('f402.jpg', dpi=360, format='jpg', bbox_inches='tight')
 plt.show()
 
 #%% Plot graphs
 
-num_X = pd.read_csv(os.path.join(comsol_folder,'p102_X.csv'), comment='%', header=None)
-num_Y = pd.read_csv(os.path.join(comsol_folder,'p102_Y.csv'), comment='%', header=None)
-q_inf=4.1641e-6
+# num_X = pd.read_csv(os.path.join(comsol_folder,'p402_X.csv'), comment='%', header=None)
+# num_Y = pd.read_csv(os.path.join(comsol_folder,'p402_Y.csv'), comment='%', header=None)
 
-# p_plot = np.nansum([p_d, p_s], axis=0)
 vel_label = r'$u_x/q_{\infty},\quad q_x/q_{\infty}$'
 
 fig, axs = plt.subplots(1,2, figsize=(9, 4))
 ax=axs[0]
 
-for R in [1, R2/R1]: #[1, R2/R1, R3/R1]:#
+for R in [1, R2/R1]: #[1, R2/R1, R3/R1]:# 
     ax.axvline( R, linestyle='--', color='darkgray', linewidth=1.2)
     ax.axvline(-R, linestyle='--', color='darkgray', linewidth=1.2)
 
 ax.axhline(1, color='black', linewidth=1.0)
 # plot analytical
-ax.plot(x_vals, u_x[int(nx_vals/2), :],linewidth=1.4)
-ax.plot(x_vals, q_x[int(nx_vals/2), :],linewidth=1.4)
+ax.plot(x_vals, u_x[int(nx_vals/2), :],linewidth=1.5)
+ax.plot(x_vals, q_x[int(nx_vals/2), :],linewidth=1.5)
 # add numerical for comparison
-ax.scatter(num_X[0]/R1, num_X[2]/q_inf, s=20,
-           marker='o',
-           facecolors='none',
-           edgecolors='black',
-           linewidths=.5)
+# ax.scatter(num_X[0]/R1, num_X[2]/q_inf, s=30,
+#            marker='o',
+#            facecolors='none',
+#            edgecolors='black',
+#            linewidths=.7)
 
-ax.scatter(num_X[0]/R1, num_X[3]/q_inf, s=20,
-           marker='o',
-           facecolors='none',
-           edgecolors='black',
-           linewidths=.5)
+# ax.scatter(num_X[0]/R1, num_X[3]/q_inf, s=30,
+#            marker='o',
+#            facecolors='none',
+#            edgecolors='black',
+#            linewidths=.7)
 
 ax.set_xlim([0, 5])
-ax.set_xlabel('$X / R_1$')
+ax.set_xlabel('$x / R_1$')
 ax.set_ylabel(vel_label)
 
 ax=axs[1]
 
-for R in [1, R2/R1]:#[1, R2/R1, R3/R1]:# 
+for R in [1, R2/R1]:# [1, R2/R1, R3/R1]:# 
     ax.axvline( R, linestyle='--', color='darkgray', linewidth=1.2)
     ax.axvline(-R, linestyle='--', color='darkgray', linewidth=1.2)
 
 ax.axhline(1, color='black', linewidth=1.0)
 
-ax.plot(y_vals, u_x[:, int(ny_vals/2)], linewidth=1.4)
-ax.plot(y_vals, q_x[:, int(ny_vals/2)], linewidth=1.4)
+ax.plot(y_vals, u_x[:, int(ny_vals/2)], linewidth=1.5)
+ax.plot(y_vals, q_x[:, int(ny_vals/2)], linewidth=1.5)
 
 # add numerical for comparison
-ax.scatter(num_Y[1]/R1, num_Y[2]/q_inf,
-           marker='o',
-           s=20,
-           facecolors='none',
-           edgecolors='black',
-           linewidths=.5)
+# ax.scatter(num_Y[1]/R1, num_Y[2]/q_inf,
+#            marker='o',
+#            s=30,
+#            facecolors='none',
+#            edgecolors='black',
+#            linewidths=.7)
 
-ax.scatter(num_Y[1]/R1, num_Y[3]/q_inf,
-           s=20,
-           marker='o',
-           facecolors='none',
-           edgecolors='black',
-           linewidths=.5)
+# ax.scatter(num_Y[1]/R1, num_Y[3]/q_inf,
+#            s=30,
+#            marker='o',
+#            facecolors='none',
+#            edgecolors='black',
+#            linewidths=.7)
 
 ax.set_xlim([0, 5])
-ax.set_xlabel('$Y / R_1$')
-ax.set_ylabel(vel_label)
+ax.set_xlabel('$y / R_1$')
+# ax.set_ylabel(vel_label)
 
 textstr = (
     rf'$\kappa_1 = {k1:.1e}$' '\n'
-    # rf'$\kappa_2 = {k2:.1e}$' '\n'
+    rf'$\kappa_2 = {k2:.1e}$' '\n'
     rf'$\kappa_3 = {k3:.1e}$'
 )
 
@@ -640,16 +639,16 @@ for ax in axs:
     ax.yaxis.set_major_locator(MultipleLocator(.5))
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
     ax.text(
-        0.65, 0.20, textstr,
+        0.58, 0.50, textstr,
         transform=ax.transAxes,
-        fontsize=10,
+        fontsize=12,
         va='top',
-        bbox=dict(boxstyle='square', facecolor='white', alpha=0.6)
+        bbox=dict(boxstyle='square', facecolor='white', alpha=1.0)
     )
     
 plt.grid(False)
 
-plt.savefig('p102.jpg', dpi=300, format='jpg', bbox_inches='tight')
+# plt.savefig('p402.jpg', dpi=360, format='jpg', bbox_inches='tight')
 plt.show()
 
 #%% Plot the pressures
@@ -683,3 +682,74 @@ ax.set_xlabel('$X / R_1$')
 ax.set_ylabel('$Y / R_1$')
 plt.grid(False)
 plt.show()
+
+#%% Plot x velocities components
+
+vmin = np.min([np.nanmin(u_x), np.nanmin(q_x)])
+vmax = np.max([np.nanmax(u_x), np.nanmax(q_x)])
+
+fig, ax = plt.subplots(figsize=(9, 5))
+contourf_d = ax.contourf(X, Y, u_x, levels=20,
+                          cmap='viridis', vmin=vmin, vmax=vmax)
+contourf_s = ax.contourf(X, Y, q_x, levels=20,
+                          cmap='viridis', vmin=vmin, vmax=vmax)
+
+cbar = plt.colorbar(contourf_s)
+cbar.set_label(r'Dimensionless velocity component')
+
+# plot streamlines
+ax.streamplot(X, Y, np.nansum([u_x, q_x], axis=0), np.nansum([u_y, q_y], axis=0),
+               color='black', linewidth=0.8, 
+               start_points=start_points, broken_streamlines=False)
+
+for R in [1, R2/R1, R3/R1]:
+    plt.gca().add_artist(
+        plt.Circle((0, 0), R, color='white', linestyle='--', fill=False))
+    
+# plt.gca().add_artist(
+#     plt.Circle((0, 0), R0/R1, facecolor='gray', linestyle='-', fill=True,
+#                edgecolor='white'))
+
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlim([-4, 4])
+ax.set_ylim([-3, 3])
+ax.set_xlabel('$X / R_1$')
+ax.set_ylabel('$Y / R_1$')
+plt.grid(False)
+plt.show()
+
+#%% Plot y velocities components
+
+vmin = np.min([np.nanmin(u_y), np.nanmin(q_y)])
+vmax = np.max([np.nanmax(u_y), np.nanmax(q_y)])
+
+fig, ax = plt.subplots(figsize=(9, 5))
+contourf_d = ax.contourf(X, Y, u_y, levels=20,
+                          cmap='viridis', vmin=vmin, vmax=vmax)
+contourf_s = ax.contourf(X, Y, q_y, levels=20,
+                          cmap='viridis', vmin=vmin, vmax=vmax)
+
+cbar = plt.colorbar(contourf_s)
+cbar.set_label(r'Dimensionless velocity component')
+
+# plot streamlines
+ax.streamplot(X, Y, np.nansum([u_x, q_x], axis=0), np.nansum([u_y, q_y], axis=0),
+               color='black', linewidth=0.8, 
+               start_points=start_points, broken_streamlines=False)
+
+for R in [1, R2/R1, R3/R1]:
+    plt.gca().add_artist(
+        plt.Circle((0, 0), R, color='white', linestyle='--', fill=False))
+
+# plt.gca().add_artist(
+#     plt.Circle((0, 0), R0/R1, facecolor='gray', linestyle='-', fill=True,
+#                edgecolor='white'))
+    
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlim([-4, 4])
+ax.set_ylim([-3, 3])
+ax.set_xlabel('$X / R_1$')
+ax.set_ylabel('$Y / R_1$')
+plt.grid(False)
+plt.show()
+
