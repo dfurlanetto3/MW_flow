@@ -7,7 +7,9 @@ Created on Sun Jul 13 11:32:02 2025
 @author: Davide Furlanetto, University of Padova
 """
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import os
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 # import pandas as pd
@@ -40,7 +42,7 @@ g_const = 9.806
 # set hydraulic conductivities [m/s] and convert to dimensionless permeabilities [-]
 k1 = 1E-1 * mu_w / (rho_w * g_const) / R1**2
 k2 = 1E-4 * mu_w / (rho_w * g_const) / R1**2
-k3 = 1E-4 * mu_w / (rho_w * g_const) / R1**2
+k3 = 1E-5 * mu_w / (rho_w * g_const) / R1**2
 
 # # Directly set permeabilities [L^2]
 # k1 = 1E-3 / R1**2
@@ -287,7 +289,7 @@ ax.streamplot(X, Y, np.nansum([u_x, q_x], axis=0), np.nansum([u_y, q_y], axis=0)
                broken_streamlines=False,# density=[5, 5]
                 )
     
-for R in [1, R2/R1]: #[1, R2/R1, R3/R1]: #
+for R in [1, R2/R1, R3/R1]: #[1, R2/R1]: #
     plt.gca().add_artist(
         plt.Circle((0, 0), R, color='white', linestyle='--', fill=False,
                    linewidth=1.1))
@@ -361,15 +363,15 @@ vel_label = r'$u_x/q_{\infty},\quad q_x/q_{\infty}$'
 fig, axs = plt.subplots(1,2, figsize=(9, 4))
 ax=axs[0]
 
-for R in [1, R2/R1]:#[1, R2/R1, R3/R1]: #
+for R in [1, R2/R1, R3/R1]: #[1, R2/R1]:#
     ax.axvline( R, linestyle='--', color='darkgray', linewidth=1.2)
     ax.axvline(-R, linestyle='--', color='darkgray', linewidth=1.2)
 
 ax.axhline(1, color='black', linewidth=1.0)
 ax.axvline(r0, color='darkgray', linewidth=1.2)
 
-ax.plot(x_vals, u_x[int(nx_vals/2), :],linewidth=1.5)
-ax.plot(x_vals, q_x[int(nx_vals/2), :],linewidth=1.5)
+ax.plot(x_vals, u_x[int(ny_vals/2), :],linewidth=1.5)
+ax.plot(x_vals, q_x[int(ny_vals/2), :],linewidth=1.5)
 
 # add numerical for comparison
 # ax.scatter(num_X[0]/R1, num_X[2]/q_inf, s=30,
@@ -390,18 +392,15 @@ ax.set_ylabel(vel_label, fontsize=12)
 
 ax=axs[1]
 
-for R in [1, R2/R1]:#[1, R2/R1, R3/R1]: #
+for R in [1, R2/R1, R3/R1]: #[1, R2/R1]:#
     ax.axvline( R, linestyle='--', color='darkgray', linewidth=1.2)
     ax.axvline(-R, linestyle='--', color='darkgray', linewidth=1.2)
 
 ax.axhline(1, color='black', linewidth=1.0)
 ax.axvline(r0, color='darkgray', linewidth=1.2)
 
-# ax.plot(y_vals, u_y[:, 1000], linewidth=1.4)
-# ax.plot(y_vals, q_y[:, 1000], linewidth=1.4)
-
-ax.plot(y_vals, u_x[:, int(ny_vals/2)], linewidth=1.5)
-ax.plot(y_vals, q_x[:, int(ny_vals/2)], linewidth=1.5)
+ax.plot(y_vals, u_x[:, int(nx_vals/2)], linewidth=1.5)
+ax.plot(y_vals, q_x[:, int(nx_vals/2)], linewidth=1.5)
 # add numerical for comparison
 # ax.scatter(num_Y[1]/R1, num_Y[2]/q_inf,
 #            marker='o',
@@ -439,7 +438,6 @@ for ax in axs:
     ax.set_box_aspect(1)
     
 plt.grid(False)
-
 # plt.savefig('p102.jpg', dpi=360, format='jpg', bbox_inches='tight')
 plt.show()
 
@@ -534,7 +532,7 @@ ax.streamplot(X, Y, np.nansum([u_x, q_x], axis=0), np.nansum([u_y, q_y], axis=0)
                broken_streamlines=False,# density=[5, 5]
                 )
     
-for R in [1, R2/R1]: #[1, R2/R1, R3/R1]: # 
+for R in [1, R2/R1, R3/R1]: # [1, R2/R1]: #
     plt.gca().add_artist(
         plt.Circle((0, 0), R, color='white', linestyle='--', fill=False,
                    linewidth=1.1)
@@ -574,14 +572,14 @@ vel_label = r'$u_x/q_{\infty},\quad q_x/q_{\infty}$'
 fig, axs = plt.subplots(1,2, figsize=(9, 4))
 ax=axs[0]
 
-for R in [1, R2/R1]: #[1, R2/R1, R3/R1]:# 
+for R in [1, R2/R1, R3/R1]:# [1, R2/R1]: #
     ax.axvline( R, linestyle='--', color='darkgray', linewidth=1.2)
     ax.axvline(-R, linestyle='--', color='darkgray', linewidth=1.2)
 
 ax.axhline(1, color='black', linewidth=1.0)
 # plot analytical
-ax.plot(x_vals, u_x[int(nx_vals/2), :],linewidth=1.5)
-ax.plot(x_vals, q_x[int(nx_vals/2), :],linewidth=1.5)
+ax.plot(x_vals, u_x[int(ny_vals/2), :],linewidth=1.5)
+ax.plot(x_vals, q_x[int(ny_vals/2), :],linewidth=1.5)
 # add numerical for comparison
 # ax.scatter(num_X[0]/R1, num_X[2]/q_inf, s=30,
 #            marker='o',
@@ -601,14 +599,14 @@ ax.set_ylabel(vel_label)
 
 ax=axs[1]
 
-for R in [1, R2/R1]:# [1, R2/R1, R3/R1]:# 
+for R in [1, R2/R1, R3/R1]:# [1, R2/R1]:# 
     ax.axvline( R, linestyle='--', color='darkgray', linewidth=1.2)
     ax.axvline(-R, linestyle='--', color='darkgray', linewidth=1.2)
 
 ax.axhline(1, color='black', linewidth=1.0)
 
-ax.plot(y_vals, u_x[:, int(ny_vals/2)], linewidth=1.5)
-ax.plot(y_vals, q_x[:, int(ny_vals/2)], linewidth=1.5)
+ax.plot(y_vals, u_x[:, int(nx_vals/2)], linewidth=1.5)
+ax.plot(y_vals, q_x[:, int(nx_vals/2)], linewidth=1.5)
 
 # add numerical for comparison
 # ax.scatter(num_Y[1]/R1, num_Y[2]/q_inf,
@@ -753,3 +751,249 @@ ax.set_ylabel('$Y / R_1$')
 plt.grid(False)
 plt.show()
 
+#%% Sensitivity of beta
+# Fix dimensionless radii
+r1 = 1
+r2 = 1.115 
+r3 = 1.923
+
+cmap = matplotlib.colormaps['magma']
+allcolors = cmap(np.linspace(0, 1, 5))
+colors = [allcolors[i] for i in range(4)]
+linestyles = ['-', '--',  ':']         # k3/k2
+
+# Functions
+def epsilon(r0):
+    return (r0**2 - 1) * (np.log(r0) * (r0**2 + 1) - r0**2 + 1)
+
+def Lambda(r0, k1, k2, k3):
+    eps = epsilon(r0)
+    gam = 2*np.log(r0)*(1 + r0**4) - r0**4 + 8*r0**2 - 7
+
+    term1 = (1/r2) * (k3/k2 + 1) * (
+        eps * ((k2/k1)*np.log(r2) + 1) - gam * k2
+    )
+
+    term2 = (r2/(r3**2)) * (k3/k2 - 1) * (
+        eps * ((k2/k1)*np.log(r2) - 1) - gam * k2
+    )
+
+    return term1 + term2
+
+def beta(r0, k1, k2, k3):
+    return 4 * epsilon(r0) / (Lambda(r0, k1, k2, k3) )
+
+def betaQ(r0, k1, k2, k3):
+    return beta(r0, k1, k2, k3) / (1 - r0)
+#%
+
+r0_vals = np.linspace(0.0001, 0.99999, 5000)
+
+k2_values = [1e-4, 1e-6, 1e-8]   
+ratios_21 = [10, 1, 0.1]
+ratios_32 = [10, 1, 0.1, 0.01]
+
+# %
+fig, axes = plt.subplots(2, len(k2_values), figsize=(12, 8), sharex=True, sharey='row')
+
+for col, k2 in enumerate(k2_values):
+
+    # --- TOP ROW: beta ---
+    ax = axes[0, col]
+
+    for i, r21 in enumerate(ratios_21):
+        k1 = k2 / r21
+
+        for j, r32 in enumerate(ratios_32):
+            k3 = r32 * k2
+
+            beta_vals = beta(r0_vals, k1, k2, k3)
+
+            ax.plot(
+                r0_vals,
+                beta_vals,
+                color=colors[j],
+                linestyle=linestyles[i],
+                linewidth=1.8
+            )
+    
+    ax.text(
+        0.37, 0.95, rf"$\kappa_2 = {k2:.0e}$",
+        transform=ax.transAxes,
+        fontsize=12,
+        va='top',
+        bbox=dict(boxstyle='square', facecolor='white', alpha=1,
+                  linewidth=.5))
+    
+    ax.set_ylim([-.1, 4.0])
+    ax.set_box_aspect(1)
+
+    if col == 0:
+        ax.set_ylabel(r"$\beta$")
+
+
+    # --- BOTTOM ROW: betaQ ---
+    ax = axes[1, col]
+
+    for i, r21 in enumerate(ratios_21):
+        k1 = k2 / r21
+
+        for j, r32 in enumerate(ratios_32):
+            k3 = r32 * k2
+
+            Qbeta_vals = betaQ(r0_vals, k1, k2, k3)
+
+            ax.plot(
+                r0_vals,
+                np.log10(Qbeta_vals),
+                color=colors[j],
+                linestyle=linestyles[i],
+                linewidth=1.8
+            )
+
+    ax.set_xlabel(r"$r_0$")
+    ax.set_ylim([-2, 2.7])
+    ax.set_box_aspect(1)
+    
+    ax.text(
+        0.35, 0.95, rf"$\kappa_2 = {k2:.0e}$",
+        transform=ax.transAxes,
+        fontsize=12,
+        va='top',
+        bbox=dict(boxstyle='square', facecolor='white', alpha=1,
+                  linewidth=.5))
+    
+    if col == 0:
+        ax.set_ylabel(r"$\log_{10}(\beta/(1-r_0))$")
+
+
+# --- Legends (shared for whole figure) ---
+color_handles = [
+    Line2D([0], [0], color='gray', linestyle=linestyles[j], lw=2, label=f"{ratios_21[j]}")
+    for j in range(len(ratios_21))
+]
+
+style_handles = [
+    Line2D([0], [0], lw=2, color=colors[i], label=f"{ratios_32[i]}")
+    for i in range(len(ratios_32))
+]
+
+fig.legend(
+    handles=color_handles,
+    title=r"$\kappa_2/\kappa_1$",
+    ncol=3,
+    fontsize=12,
+    bbox_to_anchor=(0.45, -0.008),
+    fancybox=False,
+)
+
+fig.legend(
+    handles=style_handles,
+    title=r"$\kappa_3/\kappa_2$",
+    ncol=4,
+    fontsize=12,
+    bbox_to_anchor=(0.84, -0.008),
+    fancybox=False,
+)
+
+plt.tight_layout()
+# plt.savefig('beta.jpg', dpi=360, format='jpg', bbox_inches='tight')
+plt.show()
+
+#%% Velocity distortion zone
+
+r0 = .2
+r1 = 1
+r2 = 1.115 
+r3 = 1.2
+
+chi = np.linspace(0.001, 0.2, 1000)
+
+k2_values = [1e-4, 1e-6, 1e-8]
+ratios_21 = [10, 1, 0.01]
+ratios_32 = [10, 1, 0.1, 0.01]
+
+
+# %
+fig, axs = plt.subplots(1,2, figsize=(9, 4), sharey=True)
+
+for _, k2 in enumerate(k2_values):
+
+    for i, r21 in enumerate(ratios_21):
+        k1 = k2 / r21
+
+        for j, r32 in enumerate(ratios_32):
+            k3 = r32 * k2
+            
+            r3 = 1.2
+            A3, B3, C3, D3, E3, F3, G3, H3, L3 = compute_coefficients(
+                                                r0, r2, r3, k1, k2, k3,
+                                                occlusion=False)
+            
+            r_star = np.sqrt(k3 * np.abs(L3) / chi)
+            
+            axs[0].plot( r_star, chi, 
+                    # color='gray',
+                    linewidth = 1.8,
+                    color=colors[j],
+                    linestyle=linestyles[i],
+                    # linewidth=2,
+                    alpha=0.5
+                )
+
+            r3 = 2.5
+            A3, B3, C3, D3, E3, F3, G3, H3, L3 = compute_coefficients(
+                                                r0, r2, r3, k1, k2, k3,
+                                                occlusion=False)
+            
+            r_star = np.sqrt(k3 * np.abs(L3) / chi)
+            
+            axs[1].plot( r_star, chi, 
+                    # color='gray',
+                    # linewidth = 1,
+                    color=colors[j],
+                    linestyle=linestyles[i],
+                    linewidth=1.8,
+                    alpha=1
+                )
+for ax in axs:
+    ax.axvline(10, linestyle='--', color='gray')
+    ax.set_xlim([1.2, 32])
+    ax.set_ylim([0.0, 0.08])
+    ax.set_xlabel('$r^*/R_1$')
+
+axs[0].axvline(12, linestyle='--', color='tab:blue')
+axs[1].axvline(25, linestyle='--', color='tab:blue')
+axs[0].text(
+        13, 0.06, '$10 R_3$',
+        color='tab:blue',
+        fontsize=12,
+        va='top',
+        # bbox=dict(boxstyle='square', facecolor='white', alpha=1.0)
+     )
+axs[1].text(
+        26, 0.06, '$10 R_3$',
+        color='tab:blue',
+        fontsize=12,
+        va='top',
+        # bbox=dict(boxstyle='square', facecolor='white', alpha=1.0)
+     )
+axs[0].text(
+        5, 0.07, '$10 R_1$',
+        color='darkgray',
+        fontsize=12,
+        va='top',
+        # bbox=dict(boxstyle='square', facecolor='white', alpha=1.0)
+     )
+axs[1].text(
+        11, 0.07, '$10 R_1$',
+        color='darkgray',
+        fontsize=12,
+        va='top',
+        # bbox=dict(boxstyle='square', facecolor='white', alpha=1.0)
+     )
+axs[0].set_ylabel('$\\xi$')
+
+# plt.tight_layout()
+# plt.savefig('xi.jpg', dpi=360, format='jpg', bbox_inches='tight')
+plt.show()
